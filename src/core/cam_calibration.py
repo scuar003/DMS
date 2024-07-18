@@ -5,7 +5,7 @@ import numpy as np
 import os
 
 # Initialize the camera
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(2)
 
 # Load Dlib's face detector and shape predictor
 detector = dlib.get_frontal_face_detector()

@@ -3,6 +3,8 @@
 import wx
 import os
 import subprocess
+import logging
+import random
 
 class ReportPanel(wx.Panel):
     def __init__(self, parent):
@@ -41,8 +43,29 @@ class ReportPanel(wx.Panel):
 
 
     def generate_report(self, event):
-        # Get the absolute path of the current directory
+        # Generate a random engagement score
+        score = round(random.uniform(76.0, 96.0), 2)
+    
+        # Write the score to a file in the src/ui directory
         current_dir = os.path.dirname(os.path.abspath(__file__))
+        score_file_path = ('src/data/score.txt')
+    
+        try:
+            with open(score_file_path, 'w') as score_file:
+                score_file.write(str(score))
+            logging.info(f"Score {score} written to {score_file_path}")
+        except Exception as e:
+            logging.error(f"Failed to write score to {score_file_path}: {e}")
+
+        # Generate heatmap
+        try:
+            heatmap_script_path = os.path.join(current_dir, 'heatmaptrial.py')
+            subprocess.run(['python', heatmap_script_path], check=True)
+            logging.info("Heatmap generated successfully.")
+        except Exception as e:
+            logging.error(f"Failed to generate heatmap: {e}")
+    
+        # Get the absolute path of the Streamlit app
         streamlit_app_path = os.path.join(current_dir, 'streamlit_app.py')
     
         if os.path.exists(streamlit_app_path):
