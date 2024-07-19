@@ -8,7 +8,7 @@ from core.car_calibration import calibrate
 from core.camera import Camera
 from core.face_detector import FaceDetector
 from core.eye_tracker import EyeTracker
-
+from core.main_core import DriverMonitoringSystem
 
 class HomePanel(wx.Panel):
     def __init__(self, parent, username, gaze_detection, db):
@@ -18,18 +18,18 @@ class HomePanel(wx.Panel):
         self.db = db
         self.video_writer = None
         self.timer = wx.Timer(self)
-        #self.Bind(wx.EVT_TIMER, self.update_frame, self.timer)
+        self.driver_monitoring_system = DriverMonitoringSystem()
+        self.Bind(wx.EVT_TIMER, self.update_frame, self.timer)
         self.init_ui()
 
     def init_ui(self):
         self.SetBackgroundColour(wx.Colour(255, 255, 255, 0))  # Transparent background
 
-        font = wx.Font(12, wx.FONTFAMILY_DEFAULT, wx.FONTSTYLE_NORMAL, wx.FONTWEIGHT_BOLD)
+        font = wx.Font(12, wx.DEFAULT, wx.NORMAL, wx.BOLD)
 
         hbox_camera = wx.BoxSizer(wx.HORIZONTAL)
         self.camera_label = wx.StaticText(self, label="Select Camera:")
         self.camera_label.SetFont(font)
-        # self.camera_label.SetBackgroundColour("#FFD700")  # Gold
         self.camera_label.SetForegroundColour(wx.BLACK)
         self.camera_choice = wx.Choice(self, choices=["Camera 1", "Camera 2"])  # Add more camera options as needed
         self.camera_choice.SetBackgroundColour("#FFD700")  # Gold
@@ -61,15 +61,12 @@ class HomePanel(wx.Panel):
         self.car_clibrate_button.Bind(wx.EVT_BUTTON, self.start_car_calibration)
         hbox_buttons.Add(self.car_clibrate_button, 0, wx.ALL | wx.EXPAND, 5)
 
-
-
         hbox_main = wx.BoxSizer(wx.HORIZONTAL)
         hbox_main.Add(hbox_camera, 1, wx.ALL | wx.ALIGN_CENTER_VERTICAL, 5)
         hbox_main.Add(hbox_buttons, 1, wx.ALL | wx.EXPAND, 5)
 
         self.username_label = wx.StaticText(self, label=f"Logged in as: {self.username}")
         self.username_label.SetFont(font)
-        # self.username_label.SetBackgroundColour("#FFD700")  # Gold
         self.username_label.SetForegroundColour(wx.BLACK)
 
         self.logout_button = wx.Button(self, label="↪️ Logout")
@@ -88,15 +85,13 @@ class HomePanel(wx.Panel):
     def start_live_feed(self, event):
         self.live_feed_button.Disable()
         self.stop_feed_button.Enable()
-        self.gaze_detection.start_tracking()
+        self.driver_monitoring_system.start_tracking()
 
         self.timer.Start(1000 // 30)  # Update frame 30 times per second
 
-       
-
     def stop_live_feed(self, event):
         self.timer.Stop()
-        self.gaze_detection.stop_tracking()
+        self.driver_monitoring_system.stop_tracking()
         self.live_feed_button.Enable()
         self.stop_feed_button.Disable()
 
@@ -105,19 +100,10 @@ class HomePanel(wx.Panel):
         face_detector = FaceDetector()  # Replace with actual face detector object
         eye_tracker =  EyeTracker() # Use existing eye tracker
         calibrate(camera, face_detector, eye_tracker)
-        camera.release()        
+        camera.release()
 
-
-        
-
-    # def update_frame(self, event):
-    #     ret, frame = self.eye_tracker.cap.read()
-    #     if ret:
-    #         height, width = frame.shape[:2]
-    #         frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    #         bitmap = wx.Bitmap.FromBuffer(width, height, frame_rgb)
-
-          
+    def update_frame(self, event):
+        self.driver_monitoring_system.update_tracking()
 
     def flatten_gaze_data(self, data):
         flat_data = []

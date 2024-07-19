@@ -2,7 +2,7 @@ import cv2
 
 class Camera:
     def __init__(self):
-        self.cap = cv2.VideoCapture(2)
+        self.cap = cv2.VideoCapture(0)
         self.frame_width = int(self.cap.get(cv2.CAP_PROP_FRAME_WIDTH))
         self.frame_height = int(self.cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
         cv2.namedWindow("Driver Monitoring System")
